@@ -1,5 +1,11 @@
 import React from 'react';
-import { FlatList, Text, View, TouchableOpacity } from 'react-native';
+import {
+  FlatList,
+  Text,
+  View,
+  TouchableOpacity,
+  VirtualizedList
+} from 'react-native';
 import { Colors, Size } from '../theme';
 
 import ListEmpty from './ListEmpty';
@@ -47,32 +53,22 @@ const styles = {
 };
 
 class TreeList extends React.PureComponent {
-  state = {
-    shrink: {},
-    toggleShrink: this.toggleShrink,
-    stateFromKey: 'state'
+  static defaultProps = {
+    showHeader:true
   };
-
-  toggleShrink = index => {
-    let shrink = this.state.shrink;
-    this.setState({
-      shrink: { ...shrink, [index]: !shrink[index] }
-    });
-  };
-
-  componentDidMount() {
-    /* 动态 */
-    const { shrink, toggleShrink } = this.props;
-    if (shrink && toggleShrink && typeof toggleShrink === 'function') {
-      this.setState({
-        stateFromKey: 'props'
-      });
-    }
+  constructor(props) {
+    super(props);
+    this.state = {};
+    this._vList = React.createRef();
   }
+
+  getItem = (data, index) => {
+    return this.newData[index];
+  };
 
   hide = item => {
     let key = item.key.split('-') || [];
-    let shrink = this[this.state.stateFromKey].shrink;
+    let shrink = this.props.shrink || {};
     /* 如果 shrink 没有值，或者 key 的长度是1(第一级元素) 那必定显示 */
     if (Object.keys(shrink).length < 1 || key.length < 2) {
       return false;
@@ -93,6 +89,7 @@ class TreeList extends React.PureComponent {
     /* 符合一些条件的 item 高度为 0 */
     /* 展开的 项的 key 与 当前项的 key 符合。 */
     let columns = this.props.columns;
+    const { fixedColumnName } = this.props;
     return (
       <View
         style={[
@@ -108,21 +105,14 @@ class TreeList extends React.PureComponent {
 
           let transform = columnItem.valTransform;
           let style = columnItem.style;
-          let render = columnItem.render;
 
           if (typeof transform === 'function') {
             value = transform(value);
           }
-
-          if (typeof render === 'function') {
-            /* 如果自带渲染函数，返回渲染函数的值 参数 （该项的值，该条数据对象，该条数据的index） */
-            return render(value, item, index);
-          }
-
           let keyArray = item.key.split('-');
           /* 缩进是每一列第一项都有的，但是expand 是有children且第一项才有的 */
 
-          return columnIdx === 0 && columnItem.propName === 'name' ? (
+          return columnIdx === 0 && columnItem.propName === fixedColumnName ? (
             <View
               key={columnIdx}
               style={[
@@ -133,22 +123,24 @@ class TreeList extends React.PureComponent {
                 this.hide(item) ? styles.noHeight : {}
               ]}
             >
-              {item.children &&
+              {item.hasChildren &&
                 !this.hide(item) && (
-                  <TouchableOpacity
-                    style={styles.expandButton}
-                    onPress={() =>
-                      this[this.state.stateFromKey].toggleShrink(item.key)
-                    }
-                  >
-                    {this.props.shrink[item.key] ? (
-                      <Text style={styles.expandIcon}>+</Text>
-                    ) : (
-                      <Text style={styles.expandIcon}>-</Text>
-                    )}
-                  </TouchableOpacity>
-                )}
-              <Text>{value}</Text>
+                <TouchableOpacity
+                  style={styles.expandButton}
+                  onPress={() => this.props.toggleShrink(item.key)}
+                >
+                  {this.props.shrink[item.key] ? (
+                    <Text style={styles.expandIcon}>+</Text>
+                  ) : (
+                    <Text style={styles.expandIcon}>-</Text>
+                  )}
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => this.props.toggleShrink(item.key)}
+              >
+                <Text>{value}</Text>
+              </TouchableOpacity>
             </View>
           ) : (
             <Text key={columnIdx} style={[styles.defaultCol, style]}>
@@ -160,19 +152,18 @@ class TreeList extends React.PureComponent {
     );
   };
 
-  renderListHeader = () => {
-    const columns = this.props.columns;
+  static renderListHeader = columns => {
     return (
       <View
         style={{ backgroundColor: Colors.tableOddBg }}
         justifyContent="flex-start"
-        padding="16"
-        borderBottomWidth="1"
+        padding={32}
+        borderWidth={1}
       >
         {columns.map((col, colIndex) => (
           <Text
             key={col.propName}
-            style={[styles.defaultCol, styles.thText,col.style]}
+            style={[styles.defaultCol, col.style, styles.thText]}
           >
             {col.title}
           </Text>
@@ -181,30 +172,59 @@ class TreeList extends React.PureComponent {
     );
   };
 
+  newData = [];
+
+  getItemCount = data => {
+    return data.length;
+  };
+
   renderItem = info => {
     let { item, index } = info;
     item = item || {};
+    item.hasChildren = Boolean(
+      item.children && item.children.length && item.children.length > 0
+    );
 
     return this.normalItem(item, index);
   };
 
+  /**
+   * 尽量不要用
+   * @param obj
+   */
+  scrollTo = obj => {
+    this._vList.current._scrollRef.scrollTo(obj);
+  };
+
   render() {
-    const { data, style } = this.props;
+    const {
+      data,
+      style,
+      columns,
+      scrollEnabled,
+      showHeader,
+      stickyHeaderIndices,
+      onScroll
+    } = this.props;
     return (
       <FlatList
+        stickyHeaderIndices={stickyHeaderIndices}
         data={data}
         renderItem={this.renderItem}
-        ListHeaderComponent={this.renderListHeader()}
+        ListHeaderComponent={
+          data.length > 0 && showHeader
+            ? TreeList.renderListHeader(columns)
+            : null
+        }
         keyExtractor={(item, index) => item.key}
         ListEmptyComponent={<ListEmpty />}
         style={style}
-        scrollEnabled={false}
+        scrollEnabled={scrollEnabled}
+        onScroll={onScroll}
+        ref={this._vList}
       />
     );
   }
 }
-
-TreeList.propTypes = {};
-
 
 export default TreeList;

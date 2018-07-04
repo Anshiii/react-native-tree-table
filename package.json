@@ -1,24 +1,24 @@
 {
-  "name": "react-native-tree-table",
-  "version": "1.0.0",
-  "description": "a component",
-  "main": "index.js",
+  "name": "AwesomeProject",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "babel-preset-react-native-stage-0": "^1.0.1",
+    "jest": "^23.1.0",
+    "jest-react-native": "^18.0.0",
+    "react-test-renderer": "16.3.1"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "test": "jest"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Anshiii/react-native-tree-table.git"
+  "jest": {
+    "preset": "react-native"
   },
-  "keywords": [
-    "react-native",
-    "treeTable",
-    "treeList"
-  ],
-  "author": "anshiii",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Anshiii/react-native-tree-table/issues"
-  },
-  "homepage": "https://github.com/Anshiii/react-native-tree-table#readme"
+  "dependencies": {
+    "react": "16.3.1",
+    "react-native": "~0.55.2"
+  }
 }
