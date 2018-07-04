@@ -10,6 +10,32 @@ export default class App extends React.Component {
         id: '1231312'
       }
     ];
+    let data2 = [
+      {
+        name: 'keo',
+        age: 23,
+        id: '1231312',
+        children: [
+          {
+            name: 'naka',
+            age: 212,
+            id: '1312'
+          }
+        ]
+      },
+      {
+        name: 'zazz',
+        age: 213,
+        id: 'as',
+        children: [
+          {
+            name: 'aNKIUS',
+            age: 11,
+            id: '2'
+          }
+        ]
+      }
+    ];
 
     let columns = [
       {
@@ -28,6 +54,7 @@ export default class App extends React.Component {
         <Text>Open up App.js to start working on your app!</Text>
         <Text>Open up App.js to start working on your app!</Text>
         <Table dataSource={data} columns={columns} />
+        <Table dataSource={data2} columns={columns} />
       </View>
     );
   }

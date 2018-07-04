@@ -1,5 +1,5 @@
 /* 深度遍历树形结构 */
-export const iteratorTree = (data=[]) => {
+export default (data=[]) => {
   data = JSON.parse(JSON.stringify(data));
   let lastIdx = -1;
   let array = [];

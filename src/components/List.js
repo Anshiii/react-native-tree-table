@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  FlatList,
-  Text,
-  View,
-  TouchableOpacity,
-  VirtualizedList
-} from 'react-native';
+import { FlatList, Text, View, TouchableOpacity } from 'react-native';
 import { Colors, Size } from '../theme';
 
 import ListEmpty from './ListEmpty';
@@ -18,20 +12,23 @@ const styles = reactNativeStyleInCss({
     backgroundColor: Colors.tableOddBg,
     justifyContent: 'flex-start',
     flexDirection: 'row',
-    padding: [Size.px(32), Size.px(28)],
+    padding: [Size.px(12), Size.px(18)],
     borderBottom: [Size.px(1), 'solid', Colors.borderColor]
   },
   item0wrap: {
     flexDirection: 'row',
     alignItems: 'center'
   },
+  /* 普通itemWrap */
   itemWrap: {
     flexDirection: 'row',
     paddingHorizontal: 14,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    minHeight: 44
+    minHeight: 44,
+    flex: 1
   },
+  /* 交互树形列表展开 or 闭合按钮 */
   expandButton: {
     borderStyle: 'solid',
     borderWidth: 1,
@@ -42,17 +39,18 @@ const styles = reactNativeStyleInCss({
     alignItems: 'center',
     marginRight: 4
   },
+  /* 交互Icon */
   expandIcon: {
-    fontSize: 14
+    fontSize: 14,
+    lineHeight: 15
   },
+  /* header 内容Item */
   thText: {
     color: '#a9a9a9'
   },
+  /* 列的默认宽度 */
   defaultCol: {
-    width: 140
-  },
-  defaultColBig: {
-    width: 170
+    width: 120
   },
   noHeight: {
     height: 0,
@@ -67,13 +65,24 @@ class TreeList extends React.PureComponent {
 
   constructor(props) {
     super(props);
-    this.state = {};
+    this.state = {
+      shrink: {}
+    };
     this._vList = React.createRef();
   }
 
+  toggleShrink = key => {
+    this.setState({
+      shrink: {
+        ...this.state.shrink,
+        [key]: !this.state.shrink[key]
+      }
+    });
+  };
+
   hide = item => {
-    let key = item.key.split('-') || [];
-    let shrink = this.props.shrink || {};
+    let key = item.tree_key.split('-') || [];
+    let shrink = this.state.shrink || {};
     /* 如果 shrink 没有值，或者 key 的长度是1(第一级元素) 那必定显示 */
     if (Object.keys(shrink).length < 1 || key.length < 2) {
       return false;
@@ -145,16 +154,16 @@ class TreeList extends React.PureComponent {
           let value = this.getShowValue(columnItem, item);
 
           let style = columnItem.style;
-          let keyArray = item.key.split('-');
+          let keyArray = item.tree_key.split('-');
 
           /* 缩进是每一列第一项都有的，但是expand 是有children且第一项才有的 */
-          return columnIdx === 0 && columnItem.propName === fixedColumnName ? (
+          return columnIdx === 0 || columnItem.propName === fixedColumnName ? (
             <View
               key={columnIdx}
               style={[
-                styles.defaultColBig,
+                styles.defaultCol,
                 styles.item0wrap,
-                { paddingLeft: (keyArray.length - 1) * Size.px(48) },
+                { paddingLeft: (keyArray.length - 1) * Size.px(28) },
                 style,
                 this.hide(item) ? styles.noHeight : {}
               ]}
@@ -163,9 +172,9 @@ class TreeList extends React.PureComponent {
                 !this.hide(item) && (
                 <TouchableOpacity
                   style={styles.expandButton}
-                  onPress={() => this.props.toggleShrink(item.key)}
+                  onPress={() => this.toggleShrink(item.tree_key)}
                 >
-                  {this.props.shrink[item.key] ? (
+                  {this.state.shrink[item.tree_key] ? (
                     <Text style={styles.expandIcon}>+</Text>
                   ) : (
                     <Text style={styles.expandIcon}>-</Text>
@@ -173,7 +182,7 @@ class TreeList extends React.PureComponent {
                 </TouchableOpacity>
               )}
               <TouchableOpacity
-                onPress={() => this.props.toggleShrink(item.key)}
+                onPress={() => this.toggleShrink(item.tree_key)}
               >
                 <Text>{value}</Text>
               </TouchableOpacity>
@@ -194,7 +203,7 @@ class TreeList extends React.PureComponent {
         {columns.map((col, colIndex) => (
           <Text
             key={col.propName}
-            style={[styles.defaultCol, col.style, styles.thText]}
+            style={[styles.defaultCol, styles.thText,col.style]}
           >
             {col.title}
           </Text>
@@ -215,7 +224,6 @@ class TreeList extends React.PureComponent {
     } else {
       return this.normalItem(item, index);
     }
-
   };
 
   render() {
@@ -229,8 +237,6 @@ class TreeList extends React.PureComponent {
       onScroll
     } = this.props;
 
-    console.log(this.props);
-      
     return (
       <FlatList
         stickyHeaderIndices={stickyHeaderIndices}
@@ -241,9 +247,9 @@ class TreeList extends React.PureComponent {
             ? TreeList.renderListHeader(columns)
             : null
         }
-        keyExtractor={(item) => item.id}
+        keyExtractor={item => item.id}
         ListEmptyComponent={<ListEmpty />}
-        style={style}
+        style={[style]}
         scrollEnabled={scrollEnabled}
         onScroll={onScroll}
         ref={this._vList}
