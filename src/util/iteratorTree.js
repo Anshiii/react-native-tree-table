@@ -1,5 +1,6 @@
 /* 深度遍历树形结构 */
-export const iteratorTree = data => {
+export const iteratorTree = (data=[]) => {
+  data = JSON.parse(JSON.stringify(data));
   let lastIdx = -1;
   let array = [];
   for (let i = 0; i < data.length; i++) {
@@ -9,7 +10,7 @@ export const iteratorTree = data => {
 };
 
 let node = (array, lastIdx, e, j) => {
-  e.key = j;
+  e.tree_key = j;
   array[++lastIdx] = e;
   if (e.children) {
     for (let i = 0; i < e.children.length; i++) {

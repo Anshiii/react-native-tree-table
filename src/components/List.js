@@ -9,10 +9,18 @@ import {
 import { Colors, Size } from '../theme';
 
 import ListEmpty from './ListEmpty';
+import reactNativeStyleInCss from 'react-native-style-in-css';
 
 import propTypes from 'prop-types';
 
-const styles = {
+const styles = reactNativeStyleInCss({
+  header: {
+    backgroundColor: Colors.tableOddBg,
+    justifyContent: 'flex-start',
+    flexDirection: 'row',
+    padding: [Size.px(32), Size.px(28)],
+    borderBottom: [Size.px(1), 'solid', Colors.borderColor]
+  },
   item0wrap: {
     flexDirection: 'row',
     alignItems: 'center'
@@ -50,21 +58,18 @@ const styles = {
     height: 0,
     minHeight: 0
   }
-};
+});
 
 class TreeList extends React.PureComponent {
   static defaultProps = {
-    showHeader:true
+    showHeader: true
   };
+
   constructor(props) {
     super(props);
     this.state = {};
     this._vList = React.createRef();
   }
-
-  getItem = (data, index) => {
-    return this.newData[index];
-  };
 
   hide = item => {
     let key = item.key.split('-') || [];
@@ -85,11 +90,47 @@ class TreeList extends React.PureComponent {
     return result;
   };
 
+  /* 处理transfrorm 和 render 得到真实的 view */
+  getShowValue = (columnItem, item) => {
+    let value = item[columnItem.propName];
+    let transform = columnItem.valTransform;
+    if (typeof transform === 'function') {
+      value = transform(value);
+    }
+    return value;
+  };
+
   normalItem = (item, index) => {
+    let columns = this.props.columns;
+    return (
+      <View
+        style={[
+          styles.itemWrap,
+          {
+            backgroundColor: index % 2 === 0 ? Colors.white : Colors.tableOddBg
+          }
+        ]}
+      >
+        {columns.map((columnItem, columnIdx) => {
+          let value = this.getShowValue(columnItem, item);
+          let style = columnItem.style;
+          return (
+            <Text key={columnIdx} style={[styles.defaultCol, style]}>
+              {value}
+            </Text>
+          );
+        })}
+      </View>
+    );
+  };
+
+  /* item的外容器  树形首行：带缩进，其他 无缩进。 内容：树形列表带expand的 */
+  treeItem = (item, index) => {
     /* 符合一些条件的 item 高度为 0 */
     /* 展开的 项的 key 与 当前项的 key 符合。 */
     let columns = this.props.columns;
     const { fixedColumnName } = this.props;
+
     return (
       <View
         style={[
@@ -101,17 +142,12 @@ class TreeList extends React.PureComponent {
         ]}
       >
         {columns.map((columnItem, columnIdx) => {
-          let value = item[columnItem.propName];
+          let value = this.getShowValue(columnItem, item);
 
-          let transform = columnItem.valTransform;
           let style = columnItem.style;
-
-          if (typeof transform === 'function') {
-            value = transform(value);
-          }
           let keyArray = item.key.split('-');
-          /* 缩进是每一列第一项都有的，但是expand 是有children且第一项才有的 */
 
+          /* 缩进是每一列第一项都有的，但是expand 是有children且第一项才有的 */
           return columnIdx === 0 && columnItem.propName === fixedColumnName ? (
             <View
               key={columnIdx}
@@ -154,12 +190,7 @@ class TreeList extends React.PureComponent {
 
   static renderListHeader = columns => {
     return (
-      <View
-        style={{ backgroundColor: Colors.tableOddBg }}
-        justifyContent="flex-start"
-        padding={32}
-        borderWidth={1}
-      >
+      <View style={styles.header}>
         {columns.map((col, colIndex) => (
           <Text
             key={col.propName}
@@ -172,12 +203,6 @@ class TreeList extends React.PureComponent {
     );
   };
 
-  newData = [];
-
-  getItemCount = data => {
-    return data.length;
-  };
-
   renderItem = info => {
     let { item, index } = info;
     item = item || {};
@@ -185,15 +210,12 @@ class TreeList extends React.PureComponent {
       item.children && item.children.length && item.children.length > 0
     );
 
-    return this.normalItem(item, index);
-  };
+    if (this.props.isTree) {
+      return this.treeItem(item, index);
+    } else {
+      return this.normalItem(item, index);
+    }
 
-  /**
-   * 尽量不要用
-   * @param obj
-   */
-  scrollTo = obj => {
-    this._vList.current._scrollRef.scrollTo(obj);
   };
 
   render() {
@@ -206,6 +228,9 @@ class TreeList extends React.PureComponent {
       stickyHeaderIndices,
       onScroll
     } = this.props;
+
+    console.log(this.props);
+      
     return (
       <FlatList
         stickyHeaderIndices={stickyHeaderIndices}
@@ -216,7 +241,7 @@ class TreeList extends React.PureComponent {
             ? TreeList.renderListHeader(columns)
             : null
         }
-        keyExtractor={(item, index) => item.key}
+        keyExtractor={(item) => item.id}
         ListEmptyComponent={<ListEmpty />}
         style={style}
         scrollEnabled={scrollEnabled}

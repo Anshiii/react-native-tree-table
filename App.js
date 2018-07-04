@@ -7,7 +7,7 @@ export default class App extends React.Component {
       {
         name: 'keo',
         age: 23,
-        key: '1231312'
+        id: '1231312'
       }
     ];
 

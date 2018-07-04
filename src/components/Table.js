@@ -1,46 +1,50 @@
 import React from 'react';
 import { VirtualizedList, Text, View, TouchableOpacity } from 'react-native';
 
-import ListEmpty from './ListEmpty';
 import List from './List';
 import iteratorTree from '../util/iteratorTree';
 import propTypes from 'prop-types';
 
 class Table extends React.PureComponent {
   state = {
-    data: []
+    data: [],
+    isTree: false
   };
 
   componentDidMount() {
-    this.setState({
-      data: this.flattenData(this.props.dataSource)
-    });
+    this.setState(this.flattenData(this.props.dataSource));
   }
 
-  flattenData(data = []) {
-    let newData = JSON.parse(JSON.stringify(data));
-    console.log(data);
+  flattenData(dataSour = []) {
+    let isTree = dataSour.some(
+      item => item.children && Array.isArray(item.children)
+    );
 
     /* 有任何之一的一级元素 带children key 且 值为数组，就认为是树形数组 */
-    return data.some(item => item.children && Array.isArray(item.children))
-      ? iteratorTree(newData)
-      : data;
+    let data = isTree ? iteratorTree(dataSour) : dataSour;
+    return {
+      data,
+      isTree
+    };
   }
 
   componentWillReceiveProps(nextProps) {
     const { dataSource } = nextProps;
     if (this.props.dataSource !== dataSource) {
-      this.setState({
-        data: this.flattenData(dataSource)
-      });
+      this.setState(this.flattenData(dataSource));
     }
   }
 
   render() {
     const { style, columns } = this.props;
-    console.log(this.state.data);
-
-    return <List data={this.state.data} columns={columns} style={style} />;
+    return (
+      <List
+        data={this.state.data}
+        isTree={this.state.isTree}
+        columns={columns}
+        style={style}
+      />
+    );
   }
 }
 
