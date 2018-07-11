@@ -20,6 +20,7 @@
   "dependencies": {
     "react": "16.3.1",
     "react-native": "~0.55.2",
-    "react-native-style-in-css": "^1.0.0"
+    "react-native-style-in-css": "^1.0.0",
+    "react-native-tree-table": "0.0.1"
   }
 }
