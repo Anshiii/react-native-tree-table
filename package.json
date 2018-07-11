@@ -1,0 +1,22 @@
+{
+  "name": "react-native-tree-table",
+  "version": "0.0.1",
+  "description": "在 FlatList 基础上封装的表格组件，支持树形数据的渲染。",
+  "main": "index.js",
+  "directories": {
+    "example": "example"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Anshiii/react-native-tree-table.git"
+  },
+  "author": "anshi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Anshiii/react-native-tree-table/issues"
+  },
+  "homepage": "https://github.com/Anshiii/react-native-tree-table#readme"
+}
