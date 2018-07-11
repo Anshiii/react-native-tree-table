@@ -1,6 +1,6 @@
 {
   "name": "react-native-tree-table",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "在 FlatList 基础上封装的表格组件，支持树形数据的渲染。",
   "main": "index.js",
   "directories": {
