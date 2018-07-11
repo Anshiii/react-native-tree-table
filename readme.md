@@ -174,3 +174,5 @@ const columns2 = [
 
 <Table dataSource={data} columns={columns} />
 ```
+
+![表格截图.gif](https://upload-images.jianshu.io/upload_images/3748553-4c23efdfd039efd2.gif?imageMogr2/auto-orient/strip)
