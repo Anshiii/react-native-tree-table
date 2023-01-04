@@ -4,7 +4,7 @@
   "private": true,
   "devDependencies": {
     "babel-preset-react-native-stage-0": "^1.0.1",
-    "jest": "^23.1.0",
+    "jest": "^29.3.1",
     "jest-react-native": "^18.0.0",
     "react-test-renderer": "16.3.1"
   },
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "react": "16.3.1",
-    "react-native": "~0.55.2",
+    "react-native": "~0.70.6",
     "react-native-style-in-css": "^1.0.0",
     "react-native-tree-table": "0.0.1"
   }
